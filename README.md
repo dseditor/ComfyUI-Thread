@@ -40,9 +40,9 @@ ComfyUI 的 Threads 整合自定義節點包，讓您能夠直接在 ComfyUI 工
 
 ## ExampleWorkflow | 範例工作流
 
-範例工作流使用了ollama-gemini節點來產生圖文提示內容，此節點需自行配置API金鑰才能使用Gemini。
-https://github.com/al-swaiti/ComfyUI-OllamaGemini
-有關於圖像生成模型的部分，可以修改為你自己常用的模型與節點。
+範例工作流使用了ollama-gemini節點來產生圖文提示內容，此節點需自行配置API金鑰才能使用Gemini。  
+https://github.com/al-swaiti/ComfyUI-OllamaGemini  
+有關於圖像生成模型的部分，可以修改為你自己常用的模型與節點。  
 
 ## Setup | 設置
 
@@ -55,8 +55,8 @@ You need to obtain the following from Meta Developers:
 - `ACCESS_TOKEN` - Short-lived access token | 短期訪問令牌
 - `APP_SECRET` - Your app secret | 您的應用密鑰
 
-有關他們的取得方式，可以參考SDK的開發者網址，同時你也必須安裝**requirement.txt**中的SDK：
-https://nijialin.com/2024/08/17/python-threads-sdk-introduction/
+有關他們的取得方式，可以參考SDK的開發者網址，同時你也必須安裝**requirement.txt**中的SDK：  
+https://nijialin.com/2024/08/17/python-threads-sdk-introduction/  
 
 ### 2. Configure API Access | 配置 API 訪問
 
