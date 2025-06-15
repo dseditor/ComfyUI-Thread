@@ -38,6 +38,12 @@ ComfyUI 的 Threads 整合自定義節點包，讓您能夠直接在 ComfyUI 工
 
 3. Restart ComfyUI | 重啟 ComfyUI
 
+## ExampleWorkflow | 範例工作流
+
+範例工作流使用了ollama-gemini節點來產生圖文提示內容，此節點需自行配置API金鑰才能使用Gemini。
+https://github.com/al-swaiti/ComfyUI-OllamaGemini
+有關於圖像生成模型的部分，可以修改為你自己常用的模型與節點。
+
 ## Setup | 設置
 
 ### 1. Get Threads API Credentials | 獲取 Threads API 憑證
