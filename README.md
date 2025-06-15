@@ -140,6 +140,7 @@ ComfyUI-Thread/
 - numpy
 - torch
 - requests
+- threads_sdk
 
 ## API Limitations | API 限制
 
