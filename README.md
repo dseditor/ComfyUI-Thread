@@ -26,17 +26,11 @@ ComfyUI 的 Threads 整合自定義節點包，讓您能夠直接在 ComfyUI 工
 
 ## Installation | 安裝方式
 
-1. Navigate to your ComfyUI custom nodes directory:
-   ```bash
-   cd ComfyUI/custom_nodes/
-   ```
+**Using ComfyMananger 使用ComfyUIManager安裝**  
 
-2. Clone this repository:
-   ```bash
-   git clone https://github.com/dseditor/ComfyUI-Thread.git
-   ```
-
-3. Restart ComfyUI | 重啟 ComfyUI
+Open ComfyManager  
+Search For **ComfyUI-Thread**    
+Restart ComfyUI | 重啟 ComfyUI
 
 ## ExampleWorkflow | 範例工作流
 
