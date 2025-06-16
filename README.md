@@ -106,7 +106,7 @@ Retrieve your post history from Threads.
 3. Execute to post
 
 ### Image Post with Generated Content | 使用生成內容的圖片發文
-1. Create images using ComfyUI generators (Stable Diffusion, etc.) | 直接接入圖片節點，或使用LoadImage，注意不支援ImageList/ImageBatch，會被視為多張圖
+1. Create images using ComfyUI generators (Support ImageBatch/BatchSize) | 直接接入圖片節點，或使用LoadImage，不支援ImageList做為容器，會被視為多張圖，但支援ImageBatch批次，可將多張圖片MakeImageBatch後上傳
 2. Connect image output to **Publish Thread** `image` input
 3. Add your text content
 4. Execute to post with generated images | 可組合圖片與文案至Thread
