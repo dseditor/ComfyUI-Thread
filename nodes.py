@@ -336,10 +336,16 @@ class PublishThread:
             
             # 處理圖片 tensor
             if image is not None:
-                img_url = self._process_image(image, base_url)
-                if img_url:
-                    image_urls.append(img_url)
-                    print(f"添加圖片 tensor URL: {img_url}")
+                img_result = self._process_image(image, base_url)
+                if img_result:
+                    if isinstance(img_result, list):
+                        # 批次圖片，添加所有 URL
+                        image_urls.extend(img_result)
+                        print(f"添加批次圖片 URLs: {len(img_result)} 張")
+                    else:
+                        # 單張圖片
+                        image_urls.append(img_result)
+                        print(f"添加單張圖片 URL: {img_result}")
             
             # 處理圖片網址
             if image_url.strip():
@@ -400,30 +406,126 @@ class PublishThread:
             return (f"錯誤: {str(e)}",)
 
     def _process_image(self, image, base_url):
-        """處理圖片並轉換為 URL"""
+        """處理圖片並轉換為 URL，支援單張和批次圖片"""
+        try:
+            if not isinstance(image, torch.Tensor):
+                # 如果不是 tensor，按原來方式處理
+                return self._process_single_image(image, base_url)
+            
+            print(f"接收到圖片 tensor 形狀: {image.shape}")
+            print(f"圖片 tensor 數據類型: {image.dtype}")
+            
+            # 處理各種可能的維度格式
+            if image.dim() == 4:
+                batch_size, dim1, dim2, dim3 = image.shape
+                
+                # 判斷是否為 BCHW 格式 (batch, channels, height, width)
+                if dim1 == 3 or dim1 == 1:  # channels 通常是 1 或 3
+                    print("檢測到 BCHW 格式，轉換為 BHWC")
+                    image = image.permute(0, 2, 3, 1)  # BCHW -> BHWC
+                    print(f"轉換後形狀: {image.shape}")
+                    batch_size = image.shape[0]
+                
+                # 檢查真實的批次大小
+                if batch_size > 1:
+                    # 批次處理多張圖片
+                    print(f"檢測到批次圖片: {batch_size} 張")
+                    image_urls = []
+                    
+                    for i in range(batch_size):
+                        # 提取單張圖片: (H, W, C)
+                        single_image = image[i]  # 不保持批次維度
+                        url = self._process_single_image(single_image, base_url)
+                        if url:
+                            image_urls.append(url)
+                            print(f"批次圖片 {i+1}/{batch_size} 已處理")
+                    
+                    print(f"批次處理完成，共 {len(image_urls)} 張圖片")
+                    return image_urls  # 返回 URL 列表
+                else:
+                    # 單張圖片，移除批次維度
+                    single_image = image.squeeze(0)  # (1, H, W, C) -> (H, W, C)
+                    return self._process_single_image(single_image, base_url)
+            
+            elif image.dim() == 3:
+                # 已經是 (H, W, C) 格式
+                return self._process_single_image(image, base_url)
+            
+            else:
+                print(f"未預期的維度格式: {image.shape}")
+                return self._process_single_image(image, base_url)
+                
+        except Exception as e:
+            print(f"圖片處理錯誤: {str(e)}")
+            import traceback
+            traceback.print_exc()
+            return None
+
+    def _process_single_image(self, image, base_url):
+        """處理單張圖片並轉換為 URL"""
         try:
             # 將 tensor 轉換為 PIL Image
             if isinstance(image, torch.Tensor):
+                print(f"處理單張圖片形狀: {image.shape}")
+                
+                # 確保是 3D tensor: (H, W, C)
                 if image.dim() == 4:
-                    image = image.squeeze(0)  # 移除 batch 維度
+                    image = image.squeeze(0)  # 移除批次維度
+                elif image.dim() == 2:
+                    # 灰階圖片，添加通道維度
+                    image = image.unsqueeze(-1)
                 
                 # 轉換為 numpy array
                 image_np = image.cpu().numpy()
+                print(f"轉換為 numpy 後: 形狀={image_np.shape}, 類型={image_np.dtype}")
+                
+                # 處理單通道圖片
+                if image_np.shape[-1] == 1:
+                    image_np = image_np.squeeze(-1)  # 移除單通道維度
+                    # 轉換為 RGB
+                    image_np = np.stack([image_np] * 3, axis=-1)
+                    print(f"單通道轉RGB後形狀: {image_np.shape}")
                 
                 # 確保數值在 0-255 範圍內
-                if image_np.max() <= 1.0:
-                    image_np = (image_np * 255).astype(np.uint8)
+                if image_np.dtype in [np.float32, np.float64]:
+                    if image_np.max() <= 1.0:
+                        image_np = (image_np * 255).astype(np.uint8)
+                    else:
+                        image_np = np.clip(image_np, 0, 255).astype(np.uint8)
+                elif image_np.dtype == np.uint8:
+                    # 已經是 uint8，直接使用
+                    pass
                 else:
-                    image_np = image_np.astype(np.uint8)
+                    # 其他類型，先轉換為 float 再處理
+                    image_np = image_np.astype(np.float32)
+                    if image_np.max() <= 1.0:
+                        image_np = (image_np * 255).astype(np.uint8)
+                    else:
+                        image_np = np.clip(image_np, 0, 255).astype(np.uint8)
+                
+                print(f"最終處理結果: 形狀={image_np.shape}, 類型={image_np.dtype}, 數值範圍=[{image_np.min()}, {image_np.max()}]")
                 
                 # 轉換為 PIL Image
-                pil_image = Image.fromarray(image_np)
+                if image_np.ndim == 2:
+                    # 灰階圖片
+                    pil_image = Image.fromarray(image_np, mode='L')
+                elif image_np.ndim == 3 and image_np.shape[-1] == 3:
+                    # RGB 圖片
+                    pil_image = Image.fromarray(image_np, mode='RGB')
+                elif image_np.ndim == 3 and image_np.shape[-1] == 4:
+                    # RGBA 圖片
+                    pil_image = Image.fromarray(image_np, mode='RGBA')
+                else:
+                    raise ValueError(f"不支援的圖片格式: {image_np.shape}")
+                    
             else:
                 pil_image = image
 
-            # 生成文件名
+            # 生成唯一文件名
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            filename = f"thread_image_{timestamp}.png"
+            import random
+            random_id = random.randint(1000, 9999)
+            filename = f"thread_image_{timestamp}_{random_id}.png"
             
             # 保存到 output 目錄
             output_dir = get_output_directory()
@@ -438,7 +540,9 @@ class PublishThread:
             return url
             
         except Exception as e:
-            print(f"圖片處理錯誤: {str(e)}")
+            print(f"單張圖片處理錯誤: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return None
 
 
