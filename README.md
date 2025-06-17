@@ -4,7 +4,7 @@ A ComfyUI custom node package for seamless integration with Threads (Meta's soci
 
 ComfyUI 的 Threads 整合自定義節點包，讓您能夠直接在 ComfyUI 工作流程中發布貼文、管理圖片/影片和獲取發文歷史。
 
-> **完整功能參考**: 本節點為實現發布的簡要功能與多圖片容器，若需要設定更完整的發布節點包括圖床、伺服器與權杖管理測試，請參考 [ComfyUI Threads Uploader](https://github.com/clinno0616/comfyui-threads-uploader)
+> **完整功能參考**: 本節點為實現發布的簡要功能，包括文字，圖片、影片與多圖片容器，需要自訂ComfyUIHTTPS網址，如使用ngrok，若需要設定更完整的發布節點包括使用圖床金鑰、臨時伺服器與權杖管理測試，請參考 [ComfyUI Threads Uploader](https://github.com/clinno0616/comfyui-threads-uploader)
 
 ## Features | 功能特色
 
