@@ -1,7 +1,7 @@
 [project]
 name = "thread"
 description = "A ComfyUI custom node package for seamless integration with Threads (Meta's social platform). This package allows you to publish posts, manage images, and retrieve post history directly from your ComfyUI workflows."
-version = "1.0.1"
+version = "1.0.2"
 license = {file = "LICENSE"}
 dependencies = ["threads_sdk"]
 
